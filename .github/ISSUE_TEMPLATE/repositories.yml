@@ -1,0 +1,32 @@
+name: GitHub Organisation Repositories
+description: GitHub organisation repositories
+title: "GitHub organisation repositories"
+labels: ["repositories"]
+body:
+  - type: input
+    id: organisation
+    attributes:
+      label: Organisation
+      description: Please enter the organisation
+    validations:
+      required: true
+  - type: textarea
+    id: repositories
+    attributes:
+      label: Repositories
+      description: List the repositories, one per line
+      placeholder: |
+        repository-1
+        repository-N
+    validations:
+      required: true
+  - type: dropdown
+    id: visibility
+    attributes:
+      label: Repository visibility
+      description: Please select the visibility for the repositories
+      options:
+        - private
+        - internal
+    validations:
+      required: true

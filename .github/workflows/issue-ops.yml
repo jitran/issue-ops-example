@@ -1,0 +1,65 @@
+name: Issue Ops
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+    issues: write
+
+jobs:
+  repositories:
+    if: contains(github.event.issue.labels.*.name, 'repositories') &&
+        startsWith(github.event.comment.body, '/list-repositories')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse issue body
+        id: parse-issue-body
+        uses: stefanbuck/github-issue-parser@v3
+
+      - name: Manage repositories
+        env:
+          REPOSITORIES: ${{ steps.parse-issue-body.outputs.issueparser_repositories }}
+          ORGANISATION: ${{ steps.parse-issue-body.outputs.issueparser_organisation }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const repositories = process.env.REPOSITORIES.split('\n');
+            const organisation = process.env.ORGANISATION;
+            let body = 'Repositories:\n';
+            repositories.forEach(repo => {
+              core.info(`Repository: ${organisation}/${repo}`);
+              body += `- ${organisation}/${repo}\n`
+            });
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
+
+  visibility:
+    if: contains(github.event.issue.labels.*.name, 'repositories') &&
+        startsWith(github.event.comment.body, '/list-visibility')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse issue body
+        id: parse-issue-body
+        uses: stefanbuck/github-issue-parser@v3
+
+      - name: Manage visibility
+        env:
+          VISIBILITY: ${{ steps.parse-issue-body.outputs.issueparser_repository_visibility }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const visibility = process.env.VISIBILITY;
+            core.info(`Visibility: ${visibility}`);
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Visibility: ${visibility}`
+            })
